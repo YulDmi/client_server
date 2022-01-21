@@ -8,15 +8,13 @@ import java.net.Socket;
 
 public class EchoServer {
 private final static String END_COMMAND =  "/end";
-
+private final static int PORT = 8189;
 
     public static void main(String[] args) {
-
-        Socket clientSocket = null;
         ServerSocket serverSocket = null;
-
+        Socket clientSocket = null;
         try {
-            serverSocket = new ServerSocket(8189);
+            serverSocket = new ServerSocket(PORT);
             System.out.println("Сервер запущен. Ждем подключения клиента....");
             clientSocket = serverSocket.accept();
             System.out.println("Клиент подключен");
@@ -29,7 +27,7 @@ private final static String END_COMMAND =  "/end";
                     break;
                 }
                 System.out.println("Сообщение от клиента : " + str);
-                out.writeUTF(str);
+                out.writeUTF("Эхо : " + str);
             }
         } catch (IOException e) {
             e.printStackTrace();
