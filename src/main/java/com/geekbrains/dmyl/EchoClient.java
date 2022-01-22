@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class EchoClient extends JFrame {
+    private final String SERVER_ADDR = "localhost";
+    private final int SERVER_PORT = 8189;
+
     private Socket socket;
     private DataOutputStream out;
     private DataInputStream in;
@@ -32,7 +35,7 @@ public class EchoClient extends JFrame {
 
 
     private void openConnection() throws IOException {
-        socket = new Socket("localhost", 8189);
+        socket = new Socket(SERVER_ADDR, SERVER_PORT);
         in = new DataInputStream(socket.getInputStream());
         out = new DataOutputStream(socket.getOutputStream());
 
@@ -47,7 +50,6 @@ public class EchoClient extends JFrame {
                         area.append("\n");
                     }
 
-                    out.writeUTF("Hello");
                 } catch (IOException e) {
                     System.out.println("Соединение было закрыто");
                 }
@@ -109,7 +111,9 @@ public class EchoClient extends JFrame {
         if (!msgInputField.getText().trim().isEmpty()){
 
                 try {
-                    out.writeUTF(msgInputField.getText());
+                    String text = msgInputField.getText();
+                    out.writeUTF(text);
+                    area.append("Я : " + text + "\n");
                     msgInputField.setText("");
                     msgInputField.grabFocus();
                 } catch (IOException e) {
