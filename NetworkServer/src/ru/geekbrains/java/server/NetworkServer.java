@@ -29,7 +29,7 @@ public class NetworkServer {
             auth.start();
             while (true) {
                 clientSocket = serverSocket.accept();
-                System.out.println("Клиент подключен. Аутентификация...");
+                System.out.println("Клиент подключен.");
                 clients.add(new ClientHandler(this, clientSocket));
             }
         } catch (IOException e) {

@@ -33,30 +33,30 @@ public class ClientController {
 
     public void startController() {
         networkService.connect();
-        runAuthProcess();
-
-    }
-
-    private void runAuthProcess() {
         authDilog.setVisible(true);
     }
 
     public void sendAuth(String message) throws IOException {
         networkService.sendMessage(message);
-        if (networkService.isAuthented()) {
-            authDilog.dispose();
-            clientForm.init();
-            clientForm.setTitle(networkService.getNikName());
-            clientForm.setVisible(true);
-        } else authDilog.viewError("нет такого пользователя");
+    }
+
+    public void runChat(String name) {
+        authDilog.dispose();
+        clientForm.init();
+        clientForm.setTitle(name);
+        clientForm.setVisible(true);
     }
 
     public void sendMessage(String user, String message) throws IOException {
-        networkService.sendMessage(user + " " +  message);
+        networkService.sendMessage(user + " " + message);
 
     }
-    public void viewMessage(String name, String message){
+
+    public void viewMessage(String name, String message) {
         clientForm.appendMessage(name, message);
     }
 
+    public void viewErrorAuth(String massage) {
+        authDilog.viewError(massage);
+    }
 }

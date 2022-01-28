@@ -73,11 +73,13 @@ public class ClientHandler {
                 String[] partMessage = message.split("\\s+", 3);
                 String username = auth.UsernameByLoginAndPassword(partMessage[1], partMessage[2]);
                 if (username == null) {
-                    sendMessage("/auth Err Такого пользователя нет");
+                    sendMessage("/auth Err");
+                    System.out.println("Ошибка аутентификации");
                 } else {
                     sendMessage("/auth " + username);
                     nikName = username;
                     networkServer.broadcastMessage(nikName,  "присоединился к чату!");
+                    System.out.println("Успешная аутентификация");
                     break;
                 }
             }

@@ -17,8 +17,6 @@ public class ClientForm extends JFrame{
 
     public ClientForm(ClientController clientController) {
         this.clientController = clientController;
-
-
     }
 
     public void init() {
@@ -49,39 +47,21 @@ public class ClientForm extends JFrame{
             } catch (IOException e) {
                 viewError("Сообщение не отправлено");
             }
-
-         //   appendMessage(selectUser, message);
-
         }
         messageTextField.setText(null);
     }
 
     private void appendOwnMessage(String user, String message) {
-        appendMessage("Я : " + user, message + "\\n");
+        appendMessage("Я : " + user, String.format("%s%n", message));
     }
 
     public void appendMessage(String name, String message) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                String formattedMessage = String.format("%s: %s%n", name, message);
-                chatText.append(formattedMessage);
-            }
+        SwingUtilities.invokeLater(() -> {
+            String formattedMessage = String.format("%s: %s%n", name, message);
+            chatText.append(formattedMessage);
         });
     }
     public void viewError(String err) {
         JOptionPane.showMessageDialog(null, err );
     }
-
-//    public static void main(String[] args) {
-//        SwingUtilities.invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                 ;
-//            }
-//        });
-
-    //   }
-
-
 }

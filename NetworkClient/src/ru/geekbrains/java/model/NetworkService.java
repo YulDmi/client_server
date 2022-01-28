@@ -14,7 +14,7 @@ public class NetworkService {
     private DataInputStream in;
     private volatile boolean authtorized = false;
     private ClientController controller;
-    private String nikName;
+    private volatile String nikName;
 
     public NetworkService(ClientController controller) {
         this.controller = controller;
@@ -25,6 +25,7 @@ public class NetworkService {
     public String getNikName() {
         return nikName;
     }
+
     public void connect() {
         Socket client = null;
         try {
@@ -57,11 +58,7 @@ public class NetworkService {
             try {
                 String text = in.readUTF();
                 if (text.startsWith("/auth")) {
-                    String name = text.split("\\s+", 2)[1];
-                    if (!name.equals("Err")) {
-                        authtorized = true;
-                        nikName = name;
-                    }
+                    nikName = setNikName(text);
                     continue;
                 }
                 if (text.startsWith("/end")) {
@@ -77,11 +74,20 @@ public class NetworkService {
         }
     }
 
-
-    public boolean isAuthented() {
-        while (!authtorized) ;
-        return true;
+    private String setNikName(String text) {
+        String name = text.split("\\s+", 2)[1];
+        if (!name.equals("Err")) {
+            authtorized = true;
+            nikName = name;
+            controller.runChat(nikName);
+        }else {
+            controller.viewErrorAuth("ошибка логина или пароля");
+        }
+        return nikName;
     }
+
+
+
 
 
 }
