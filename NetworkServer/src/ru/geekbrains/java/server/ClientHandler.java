@@ -14,7 +14,7 @@ public class ClientHandler {
     private DataOutputStream out;
     private String nikName;
 
-    public ClientHandler(NetworkServer server, Socket socket ) {
+    public ClientHandler(NetworkServer server, Socket socket) {
         this.networkServer = server;
         this.clientSocket = socket;
         init();
@@ -22,20 +22,25 @@ public class ClientHandler {
 
     private void init() {
         try {
+
             in = new DataInputStream(clientSocket.getInputStream());
             out = new DataOutputStream(clientSocket.getOutputStream());
             new Thread(() -> {
                 try {
+                    System.out.println("Попытка аутентификации");
+
                     authentication();
+                    System.out.println("Попытка чтения сообщ");
                     readMessage();
                 } catch (IOException e) {
+                    e.printStackTrace();
                     System.out.println(nikName + " - покинул чат.");
                 } finally {
                     closeConnection();
                 }
             }).start();
         } catch (IOException e) {
-           System.out.println("Ошибка при обработке соединения");
+            System.out.println("Ошибка при обработке соединения");
         }
     }
 
@@ -56,17 +61,20 @@ public class ClientHandler {
     private void authentication() throws IOException {
 
         while (true) {
-            Authentication auth = networkServer.getAuth();
-            String message = in.readUTF();
-            if (message.startsWith("/auth")) {
-                String[] partMessage = message.split("\\s+", 3);
-                String username = auth.UsernameByLoginAndPassword(partMessage[1], partMessage[2]);
-                if (username == null) {
-                    sendMessage("нет такого пользователя");
-                } else {
-                    nikName = username;
-                    networkServer.broadcastMessage(nikName + "присоединился к чату!");
-                    break;
+                        Authentication auth = networkServer.getAuth();
+                        String message = in.readUTF();
+            System.out.println("из метода аутентификации " + message);
+                        if (message.startsWith("/auth")) {
+                            String[] partMessage = message.split("\\s+", 3);
+                            String username = auth.UsernameByLoginAndPassword(partMessage[1], partMessage[2]);
+                            System.out.println(username);
+                            if (username == null) {
+                                sendMessage("/auth Err Такого пользователя нет");
+                            } else {
+                                sendMessage("/auth " + username);
+                                nikName = username;
+                                networkServer.broadcastMessage(nikName + "присоединился к чату!");
+                                break;
                 }
             }
         }
