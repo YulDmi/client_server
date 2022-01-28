@@ -1,7 +1,6 @@
 package ru.geekbrains.java.model;
 
 import ru.geekbrains.java.controller.ClientController;
-import ru.geekbrains.java.controller.MessageHandler;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -9,20 +8,13 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class NetworkService {
-    private   String HOST;
-    private   int PORT;
+    private String HOST;
+    private int PORT;
     private DataOutputStream out;
     private DataInputStream in;
-    private boolean authtorized = false;
-    private MessageHandler messageHandler;
+    private volatile boolean authtorized = false;
     private ClientController controller;
     private String nikName;
-    //   private Authentication auth;
-
-public NetworkService(){
-    HOST = "localhost";
-    PORT = 8189;
-}
 
     public NetworkService(ClientController controller) {
         this.controller = controller;
@@ -30,48 +22,37 @@ public NetworkService(){
         this.HOST = controller.getHOST();
     }
 
+    public String getNikName() {
+        return nikName;
+    }
     public void connect() {
-        Socket socket = null;
+        Socket client = null;
         try {
-            socket = new Socket(HOST, PORT);
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
+            client = new Socket(HOST, PORT);
+            out = new DataOutputStream(client.getOutputStream());
+            in = new DataInputStream(client.getInputStream());
 
-            System.out.println("connected");
-
-        //    runReedMessage();
-            new Thread(() -> {
-
-                // try {
-
-                reedMessage();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-            }).start();
+            Thread t = new Thread(this::reedMessage);
+            t.start();
         } catch (IOException e) {
             e.printStackTrace();
-//        } finally {
-//            if (socket != null) {
-//                try {
-//                    socket.close();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
- //           }
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
     }
 
 
     public void sendMessage(String message) throws IOException {
         out.writeUTF(message);
-        System.out.println("send");
     }
 
 
     public void reedMessage() {
-
-        System.out.println("Test reed Message");
         while (true) {
             try {
                 String text = in.readUTF();
@@ -80,27 +61,27 @@ public NetworkService(){
                     if (!name.equals("Err")) {
                         authtorized = true;
                         nikName = name;
-                        break;
                     }
-
+                    continue;
                 }
+                if (text.startsWith("/end")) {
+                    controller.viewMessage("Server", " Соединение разорвано");
+                    return;
+                }
+                String[] partText = text.split("\\s+", 2);
+                controller.viewMessage(partText[0], partText[1]);
             } catch (IOException e) {
                 e.printStackTrace();
                 return;
             }
-
-
         }
     }
 
 
     public boolean isAuthented() {
-        return authtorized;
+        while (!authtorized) ;
+        return true;
     }
 
-    public static void main(String[] args) {
-        NetworkService networkService = new NetworkService();
-        networkService.connect();
-    }
 
 }

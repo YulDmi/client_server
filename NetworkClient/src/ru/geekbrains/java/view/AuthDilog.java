@@ -23,11 +23,7 @@ public class AuthDilog extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -71,10 +67,4 @@ public class AuthDilog extends JDialog {
         dispose();
     }
 
-//    public static void main(String[] args) {
-//        AuthDilog dialog = new AuthDilog(new NetworkService());
-//        dialog.pack();
-//        dialog.setVisible(true);
-//
-//    }
 }

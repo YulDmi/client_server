@@ -21,7 +21,7 @@ public class NetworkServer {
     }
 
     public void start() {
-        Socket clientSocket = null;
+        Socket clientSocket ;
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
 
@@ -32,18 +32,11 @@ public class NetworkServer {
                 System.out.println("Клиент подключен. Аутентификация...");
                 clients.add(new ClientHandler(this, clientSocket));
             }
-
         } catch (IOException e) {
             System.out.println("Ошибка при работе с сервером");
         }
         finally {
-    //        try {
                 auth.stop();
-
-   //             clientSocket.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
         }
     }
 
@@ -51,16 +44,27 @@ public class NetworkServer {
         return auth;
     }
 
-    public synchronized void broadcastMessage(String massage) {
+    public synchronized void broadcastMessage(String name, String massage) {
         for (ClientHandler ch : clients){
             try {
-                ch.sendMessage(massage);
+                if (ch.getNikName().equals(name)) continue;
+                ch.sendMessage(String.format("От %s : %s%n", name, massage));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
+    public synchronized void broadcastMessageByName (String name, String massage)    {
+        for (ClientHandler ch : clients){
+            try {
+                if (ch.getNikName().equals(name))
+                ch.sendMessage(massage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     public synchronized void uncheckClient(ClientHandler clientHandler) {
         clients.remove(clientHandler);
     }

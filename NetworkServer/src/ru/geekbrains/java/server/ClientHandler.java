@@ -14,26 +14,29 @@ public class ClientHandler {
     private DataOutputStream out;
     private String nikName;
 
+
+
+
     public ClientHandler(NetworkServer server, Socket socket) {
         this.networkServer = server;
         this.clientSocket = socket;
         init();
     }
 
+    public String getNikName() {
+        return nikName;
+    }
     private void init() {
         try {
-
-            in = new DataInputStream(clientSocket.getInputStream());
             out = new DataOutputStream(clientSocket.getOutputStream());
+            in = new DataInputStream(clientSocket.getInputStream());
+
             new Thread(() -> {
                 try {
                     System.out.println("Попытка аутентификации");
-
                     authentication();
-                    System.out.println("Попытка чтения сообщ");
                     readMessage();
                 } catch (IOException e) {
-                    e.printStackTrace();
                     System.out.println(nikName + " - покинул чат.");
                 } finally {
                     closeConnection();
@@ -47,34 +50,35 @@ public class ClientHandler {
     private void readMessage() throws IOException {
         while (true) {
             String message = in.readUTF();
-            System.out.printf("От %s : %s%n", nikName, message);
-
             if ("/end".equals(message)) {
                 System.out.println("Соединение разорвано");
                 return;
             }
-            networkServer.broadcastMessage(String.format("От %s : %s%n", nikName, message));
-
+            String[] text = message.split("\\s+", 2);
+            String name = text[0];
+            String mess = text[1];
+            if (name.equals("All")) {
+                networkServer.broadcastMessage(nikName, message);
+            } else
+                networkServer.broadcastMessageByName(name, String.format("Приватно от %s : %s%n", nikName, mess));
         }
     }
 
     private void authentication() throws IOException {
 
         while (true) {
-                        Authentication auth = networkServer.getAuth();
-                        String message = in.readUTF();
-            System.out.println("из метода аутентификации " + message);
-                        if (message.startsWith("/auth")) {
-                            String[] partMessage = message.split("\\s+", 3);
-                            String username = auth.UsernameByLoginAndPassword(partMessage[1], partMessage[2]);
-                            System.out.println(username);
-                            if (username == null) {
-                                sendMessage("/auth Err Такого пользователя нет");
-                            } else {
-                                sendMessage("/auth " + username);
-                                nikName = username;
-                                networkServer.broadcastMessage(nikName + "присоединился к чату!");
-                                break;
+            Authentication auth = networkServer.getAuth();
+            String message = in.readUTF();
+            if (message.startsWith("/auth")) {
+                String[] partMessage = message.split("\\s+", 3);
+                String username = auth.UsernameByLoginAndPassword(partMessage[1], partMessage[2]);
+                if (username == null) {
+                    sendMessage("/auth Err Такого пользователя нет");
+                } else {
+                    sendMessage("/auth " + username);
+                    nikName = username;
+                    networkServer.broadcastMessage(nikName,  "присоединился к чату!");
+                    break;
                 }
             }
         }
@@ -88,7 +92,7 @@ public class ClientHandler {
     private void closeConnection() {
         try {
             networkServer.uncheckClient(this);
-            networkServer.broadcastMessage(String.format("%s : покинул чат. %n", nikName));
+            networkServer.broadcastMessage(nikName, " покинул чат." );
             clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();

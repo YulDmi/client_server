@@ -5,9 +5,9 @@ import java.util.List;
 public class NetworkAuth implements Authentication {
 
     private static final List<UserData> list=List.of(
-            new UserData("username1","login1", "password1"),
-            new UserData("username2","login2", "password2"),
-            new UserData("username3","login3", "password3"));
+            new UserData("username1","log1", "pass1"),
+            new UserData("username2","log2", "pass2"),
+            new UserData("username3","log3", "pass3"));
 
     public List<UserData> getList() {
         return list;
