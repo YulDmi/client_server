@@ -38,6 +38,7 @@ public class NetworkService {
                     reedMessage();
                 } catch (IOException e) {
                     e.printStackTrace();
+                    System.exit(-1);
                 } finally {
                     close();
                 }
