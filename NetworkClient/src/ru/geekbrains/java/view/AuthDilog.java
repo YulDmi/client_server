@@ -40,9 +40,11 @@ public class AuthDilog extends JDialog {
     }
 
     private void onOK() {
-    StringBuilder sb = new StringBuilder("/auth ").append(loginText.getText().trim()).append(" ").append(passwordText.getPassword());
+
+    String login = loginText.getText().trim();
+    String password = new String(passwordText.getPassword());
         try {
-            clientController.sendAuth(sb.toString());
+            clientController.sendAuth(login, password);
         } catch (IOException e) {
             viewError("Ошибка отправки данных");
         }

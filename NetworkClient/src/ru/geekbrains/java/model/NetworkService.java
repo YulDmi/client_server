@@ -1,20 +1,26 @@
 package ru.geekbrains.java.model;
 
+import ru.geekbrains.java.Command;
+import ru.geekbrains.java.command.*;
 import ru.geekbrains.java.controller.ClientController;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
+
+import static ru.geekbrains.java.Command.*;
 
 public class NetworkService {
     private String HOST;
     private int PORT;
-    private DataOutputStream out;
-    private DataInputStream in;
-    private volatile boolean authtorized = false;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
     private ClientController controller;
     private volatile String nikName;
+    private final String USER_ALL = "All";
+    private Socket client;
 
     public NetworkService(ClientController controller) {
         this.controller = controller;
@@ -22,72 +28,97 @@ public class NetworkService {
         this.HOST = controller.getHOST();
     }
 
-    public String getNikName() {
-        return nikName;
-    }
-
     public void connect() {
-        Socket client = null;
         try {
             client = new Socket(HOST, PORT);
-            out = new DataOutputStream(client.getOutputStream());
-            in = new DataInputStream(client.getInputStream());
-
-            Thread t = new Thread(this::reedMessage);
-            t.start();
+            out = new ObjectOutputStream(client.getOutputStream());
+            in = new ObjectInputStream(client.getInputStream());
+            new Thread(() -> {
+                try {
+                    reedMessage();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    close();
+                }
+            }).start();
         } catch (IOException e) {
             e.printStackTrace();
-            if (client != null) {
-                try {
-                    client.close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
+            close();
         }
     }
 
 
-    public void sendMessage(String message) throws IOException {
-        out.writeUTF(message);
-    }
-
-
-    public void reedMessage() {
+    public void reedMessage() throws IOException {
         while (true) {
+            Command command;
             try {
-                String text = in.readUTF();
-                if (text.startsWith("/auth")) {
-                    nikName = setNikName(text);
-                    continue;
+                command = (Command) in.readObject();
+                if (command == null) continue;
+                switch (command.getType()) {
+                    case AUTH:
+                        CommandAuth commandAuth = (CommandAuth) command.getData();
+                        nikName = commandAuth.getName();
+                        controller.runChat(nikName);
+                        break;
+                    case AUTH_ERROR:
+                        CommandAuthError commandAuthError = (CommandAuthError) command.getData();
+                        controller.viewErrorAuth(commandAuthError.getMessageError());
+                        break;
+                    case UPDATE_USER_LIST:
+                        CommandUpdateUserList cul = (CommandUpdateUserList) command.getData();
+                        List<String> names = cul.getList();
+                        names.remove(nikName);
+                        names.add(0, USER_ALL);
+                        controller.updateList(names);
+                        break;
+                    case ERROR:
+                        CommandError commandError = (CommandError) command.getData();
+                        String messageError = commandError.getMessageError();
+                        System.out.println(messageError);
+                        controller.viewErrorAuth(messageError);
+                        break;
+                    case MESSAGE:
+                        CommandMessage commandMessage = (CommandMessage) command.getData();
+                        controller.viewMessage(USER_ALL + " <- ", commandMessage.getMessage());
+                        break;
+                    case PRIVATE_MESSAGE:
+                        CommandPrivateMessage commandPrivateMessage = (CommandPrivateMessage) command.getData();
+                        controller.viewMessage("Мне <- ", commandPrivateMessage.getMessage());
+                        break;
+                    default:
+                        System.err.println("Не известная комманда");
                 }
-                if (text.startsWith("/end")) {
-                    controller.viewMessage("Server", " Соединение разорвано");
-                    return;
-                }
-                String[] partText = text.split("\\s+", 2);
-                controller.viewMessage(partText[0], partText[1]);
-            } catch (IOException e) {
+            } catch (ClassNotFoundException e) {
                 e.printStackTrace();
-                return;
+                System.err.println("Не известная комманда");
             }
         }
     }
 
-    private String setNikName(String text) {
-        String name = text.split("\\s+", 2)[1];
-        if (!name.equals("Err")) {
-            authtorized = true;
-            nikName = name;
-            controller.runChat(nikName);
-        }else {
-            controller.viewErrorAuth("ошибка логина или пароля");
+
+    public void sendMessage(String user, String message) throws IOException {
+        String mess = String.format("От %s : %s", nikName, message);
+
+        if (user.equals(USER_ALL)) {
+            sendCommand(commandMessage(mess));
+        } else {
+            sendCommand(commandPrivateMessage(user, mess));
         }
-        return nikName;
     }
 
+    public void sendCommand(Command command) throws IOException {
+        out.writeObject(command);
+    }
 
-
-
+    private void close() {
+        if (client != null) {
+            try {
+                client.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
 
 }

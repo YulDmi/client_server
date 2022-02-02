@@ -7,4 +7,6 @@ public interface Authentication {
     void stop();
 
     String UsernameByLoginAndPassword(String login, String password);
+
+
 }

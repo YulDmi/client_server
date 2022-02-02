@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.List;
 
 public class ClientForm extends JFrame{
     private ClientController clientController;
@@ -52,16 +53,26 @@ public class ClientForm extends JFrame{
     }
 
     private void appendOwnMessage(String user, String message) {
-        appendMessage("Я : " + user, String.format("%s%n", message));
+        appendMessage("Я -> " + user, String.format("%s", message));
     }
 
     public void appendMessage(String name, String message) {
         SwingUtilities.invokeLater(() -> {
-            String formattedMessage = String.format("%s: %s%n", name, message);
+            String formattedMessage = String.format("%s  %s%n", name, message);
             chatText.append(formattedMessage);
         });
     }
     public void viewError(String err) {
         JOptionPane.showMessageDialog(null, err );
+    }
+
+    public void updateUserList(List<String> list) {
+
+        SwingUtilities.invokeLater(() -> {
+            DefaultListModel<String > model = new DefaultListModel<>();
+            model.addAll(list);
+            userList.setModel(model);
+        });
+
     }
 }
