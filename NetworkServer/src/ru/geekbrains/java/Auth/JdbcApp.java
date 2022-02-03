@@ -11,7 +11,7 @@ public class JdbcApp {
 
     public void connect() throws SQLException {
         connection = DriverManager.getConnection("jdbc:sqlite:demobase.db");
-        System.out.println("base is connect");
+        System.out.println("base connect");
         statement = connection.createStatement();
 
     }
@@ -29,6 +29,7 @@ public class JdbcApp {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        System.out.println("base close");
     }
 
     public String readEx(String log, String pass) throws SQLException {
