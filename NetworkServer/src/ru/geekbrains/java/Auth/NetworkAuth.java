@@ -1,36 +1,49 @@
 package ru.geekbrains.java.Auth;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class NetworkAuth implements Authentication {
+private JdbcApp jdbc;
+//    private static final List<UserData> users = List.of(
+//            new UserData("username1", "log1", "pass1"),
+//            new UserData("username2", "log2", "pass2"),
+//            new UserData("username3", "log3", "pass3"));
 
-    private static final List<UserData> list = List.of(
-            new UserData("username1", "log1", "pass1"),
-            new UserData("username2", "log2", "pass2"),
-            new UserData("username3", "log3", "pass3"));
-
-    public List<UserData> getList() {
-        return list;
-    }
 
     @Override
     public void start() {
+        jdbc = new JdbcApp();
+        try {
+            jdbc.connect();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         System.out.println("Аутентификачия запущена");
 
     }
 
     @Override
-    public void stop() {
+    public void stop(){
+        jdbc.stop();
         System.out.println("Аутентификачия закрыта");
     }
 
     @Override
     public String UsernameByLoginAndPassword(String login, String password) {
-        for (UserData ud : list) {
-            if (ud.login.equals(login) && ud.password.equals(password))
-                return ud.name;
+        try {
+         String name =   jdbc.readEx(login, password);
+         return name;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return null;
+
+//        for (UserData ud : users) {
+//            if (ud.login.equals(login) && ud.password.equals(password))
+//                return ud.name;
+//        }
+         return null;
+
     }
 
     private static class UserData {

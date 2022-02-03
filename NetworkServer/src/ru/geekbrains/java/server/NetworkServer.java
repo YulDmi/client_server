@@ -1,12 +1,14 @@
 package ru.geekbrains.java.server;
 
 import ru.geekbrains.java.Auth.Authentication;
+import ru.geekbrains.java.Auth.JdbcApp;
 import ru.geekbrains.java.Auth.NetworkAuth;
 import ru.geekbrains.java.Command;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +19,7 @@ public class NetworkServer {
     private final int port;
     private final List<ClientHandler> clients;
     private Authentication auth;
+
 
     public NetworkServer(int port) {
         this.port = port;

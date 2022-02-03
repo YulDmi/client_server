@@ -1,5 +1,9 @@
 package ru.geekbrains.java.server;
 
+import ru.geekbrains.java.Auth.JdbcApp;
+
+import java.sql.SQLException;
+
 public class ServerApp {
     public static final int DEFAULT_PORT = 8189;
 
@@ -11,7 +15,7 @@ public class ServerApp {
 
     private static int getPort(String[] args) {
         int port = DEFAULT_PORT;
-        if (args.length == 1){
+        if (args.length == 1) {
             try {
                 port = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
