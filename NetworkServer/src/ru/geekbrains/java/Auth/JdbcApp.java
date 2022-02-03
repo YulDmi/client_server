@@ -37,9 +37,11 @@ public class JdbcApp {
         preparedStatement.setString(2, pass);
 
         ResultSet rs = preparedStatement.executeQuery();
-        rs.next();
-        String name = rs.getString(2);
-        return name;
+       if (rs.next()){
+           String name = rs.getString(2);
+           return name;
+       }else return null;
+
 //    ResultSet rs = statement.executeQuery("SELECT * FROM Users;");
 //        while (rs.next()){
 //            System.out.println(rs.getString(2) + " " + rs.getString(3));

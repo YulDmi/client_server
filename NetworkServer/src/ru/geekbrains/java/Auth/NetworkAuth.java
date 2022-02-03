@@ -33,6 +33,7 @@ private JdbcApp jdbc;
     public String UsernameByLoginAndPassword(String login, String password) {
         try {
          String name =   jdbc.readEx(login, password);
+         if (name != null)
          return name;
         } catch (SQLException e) {
             e.printStackTrace();
